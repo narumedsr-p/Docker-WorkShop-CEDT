@@ -4,7 +4,7 @@
 # Builder stage — installs production dependencies only, on a fresh Node base.
 # =============================================================================
 
-FROM node:20.11-slim AS builder
+FROM node:24 AS builder
 #   Do NOT use `node:latest` — we want reproducible builds across the cohort.
 
 WORKDIR /app
