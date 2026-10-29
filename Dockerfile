@@ -10,7 +10,7 @@ FROM node:24 AS builder
 WORKDIR /app
 
 COPY app/package.json app/package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm update proxy-addr --omit=dev
 
 COPY app/ .
 
@@ -19,6 +19,10 @@ COPY app/ .
 # =============================================================================
 
 FROM node:20.11-slim
+
+# Patch OS packages and drop the bundled npm/npx (unused at runtime, carries its own CVEs).
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 WORKDIR /app
 
@@ -30,4 +34,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
 CMD node -e "require('http').get('http://localhost:3000/health', r => process.exit(r.statusCode===200?0:1)).on('error', () => process.exit(1))"
 
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
